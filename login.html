@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Zero Waste Food System</title>
+<style>
+body { font-family: Arial; text-align:center; background:#eef; }
+.card { border:1px solid #ccc; margin:10px; padding:10px; background:white; }
+.green { background:#d4edda; }
+.yellow { background:#fff3cd; }
+.red { background:#f8d7da; }
+button { margin:5px; padding:5px; }
+</style>
+</head>
+
+<body>
+
+<h2>Zero Waste Smart Food System</h2>
+
+<!-- LOGIN -->
+<div id="login">
+<input id="user" placeholder="Enter name"><br>
+<button onclick="start()">Login</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="app" style="display:none;">
+<button onclick="show('sell')">Sell Food</button>
+<button onclick="show('get')">Get Food</button>
+
+<!-- SELL -->
+<div id="sell" style="display:none;">
+<h3>Sell Food</h3>
+<input id="name" placeholder="Food Name"><br>
+<input id="qty" placeholder="Quantity (grams)"><br>
+<input id="quality" placeholder="Quality"><br>
+<input id="type" placeholder="Type"><br>
+<input id="loc" placeholder="Location"><br>
+<input id="exp" type="datetime-local"><br>
+<button onclick="add()">Submit</button>
+</div>
+
+<!-- GET -->
+<div id="get" style="display:none;">
+<h3>Available Food</h3>
+<div id="list"></div>
+</div>
+
+</div>
+
+<script>
+
+function start(){
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="block";
+}
+
+function show(x){
+document.getElementById("sell").style.display="none";
+document.getElementById("get").style.display="none";
+document.getElementById(x).style.display="block";
+if(x==="get") load();
+}
+
+function add(){
+let f={
+name:name.value,
+qty:qty.value,
+quality:quality.value,
+type:type.value,
+loc:loc.value,
+exp:exp.value
+};
+let data=JSON.parse(localStorage.getItem("food"))||[];
+data.push(f);
+localStorage.setItem("food",JSON.stringify(data));
+alert("Food added");
+}
+
+function load(){
+let data=JSON.parse(localStorage.getItem("food"))||[];
+let html="";
+
+data.forEach((f,i)=>{
+let now=new Date();
+let ex=new Date(f.exp);
+
+let status="Fresh",color="green";
+
+if(ex<now){status="Expired";color="red";}
+else if((ex-now)<3600000){status="Near Expiry";color="yellow";alert("⚠️ "+f.name+" expiring soon");}
+
+html+=`
+<div class="card ${color}">
+<h3>${f.name}</h3>
+<p>${f.qty}g</p>
+<p>${f.quality}</p>
+<p>${f.type}</p>
+<p>${f.loc}</p>
+<p>${status}</p>
+
+${status==="Expired"?`
+<button onclick="send(${i},'Biogas')">⚡ Biogas</button>
+<button onclick="send(${i},'Animals')">🐖 Animals</button>
+<button onclick="send(${i},'Fertilizer')">🌱 Fertilizer</button>
+`:`<button>Get Food</button>`}
+
+</div>`;
+});
+
+list.innerHTML=html;
+}
+
+function send(i,type){
+let data=JSON.parse(localStorage.getItem("food"));
+
+let q=data[i].qty;
+
+if(type==="Biogas"){
+if(q<100) alert("Low energy ⚡");
+else alert("High energy ⚡🔥");
+}
+
+alert("Sent to "+type);
+}
+
+</script>
+
+</body>
+</html>
